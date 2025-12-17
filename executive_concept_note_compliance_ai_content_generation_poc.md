@@ -70,12 +70,6 @@
 
 ---
 
-### ✅ POC Success Criteria
-- Generates compliant content on first pass
-- Explains *why* content is compliant
-- Demonstrates realistic AWS costing
-
----
 
 **This POC proves that compliant fintech content generation can be automated safely and economically.**
 
