@@ -21,8 +21,9 @@ class GeminiGenerator:
             raise ValueError("GEMINI_API_KEY environment variable is required")
         
         genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-pro')
-        logger.info("Gemini generator initialized")
+        # Use gemini-1.5-flash for faster response and better availability
+        self.model = genai.GenerativeModel('gemini-1.5-flash')
+        logger.info("Gemini generator initialized (model: gemini-1.5-flash)")
 
     def generate_content(self, enhanced_prompt: str) -> str:
         """

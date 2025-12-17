@@ -5,14 +5,17 @@ from sqlalchemy.orm import Session
 from typing import Optional
 from pathlib import Path
 import shutil
+import logging
 
 from app.core.database import get_db
-from app.models.models import Submission, SubmissionStatus, ContentChunk, AuditLog
+from app.models.models import Submission, SubmissionStatus, ContentChunk, AuditLog, User
 from app.services.document_service import parse_document
 from app.services.chunking_service import chunk_content
 from app.services.prompt_service import enhance_user_prompt
 from app.services.generation_service import generate_content
 from app.services.compliance_service import check_content_compliance
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -25,16 +28,20 @@ async def generate_compliant_content(
     db: Session = Depends(get_db)
 ):
     """
-    Agent endpoint: Generate compliant content.
+    Agent endpoint: Generate compliant content with web search enhancement.
     
     Flow:
-    1. Parse uploaded file (if any)
-    2. Enhance prompt with compliance rules
-    3. Generate content with Gemini
-    4. Review with Groq
-    5. Make final compliance decision
-    6. Return result with violations (if any)
+    1. Create submission
+    2. Web search for relevant information
+    3. Parse uploaded file (if any)
+    4. Enhance prompt with rules + web research
+    5. Generate content with Gemini
+    6. Review with Groq + Rule Engine
+    7. Make final compliance decision
+    8. Return result with web research
     """
+    from app.services.web_search_service import get_search_service
+    
     try:
         # Create submission record
         submission = Submission(
@@ -45,6 +52,21 @@ async def generate_compliant_content(
         db.add(submission)
         db.commit()
         db.refresh(submission)
+        
+        # WEB SEARCH: Research the topic
+        web_research = []
+        research_sources = []
+        search_service = get_search_service()
+        
+        if search_service.enabled:
+            keywords = search_service.extract_keywords(prompt)
+            search_results = await search_service.research(keywords, max_results=3)
+            
+            for result in search_results:
+                web_research.append(f"{result['title']}: {result['snippet']}")
+                research_sources.append(result['url'])
+            
+            logger.info(f"Web research: {len(web_research)} results for '{keywords}'")
         
         # Parse uploaded file if provided
         file_content = None
@@ -83,10 +105,17 @@ async def generate_compliant_content(
                     detail=f"Failed to parse uploaded file: {str(e)}"
                 )
         
-        # Enhance prompt with compliance rules
+        # Enhance prompt with compliance rules + web research
         enhanced_prompt = enhance_user_prompt(
             db, prompt, file_content, file_type
         )
+        
+        # Add web research to prompt if available
+        if web_research:
+            research_context = "\n\nWEB RESEARCH FINDINGS:\n" + "\n".join(
+                f"- {research}" for research in web_research
+            )
+            enhanced_prompt += research_context
         
         # Chunk prompt
         prompt_chunks = chunk_content(prompt, "prompt")
@@ -124,20 +153,25 @@ async def generate_compliant_content(
             db, submission.id, generated_content
         )
         
-        # Log audit trail
-        audit = AuditLog(
-            user_id=user_id,
-            action="generate_content",
-            entity_type="submission",
-            entity_id=submission.id,
-            details=f"Status: {compliance_result['compliance_status']}, Violations: {compliance_result['total_violations']}"
-        )
-        db.add(audit)
-        db.commit()
+        # Log audit trail only if valid user
+        if user_id > 0:
+            user = db.query(User).filter(User.id == user_id).first()
+            if user:
+                audit = AuditLog(
+                    user_id=user_id,
+                    action="generate_content",
+                    entity_type="submission",
+                    entity_id=submission.id,
+                    details=f"Status: {compliance_result['compliance_status']}, Violations: {compliance_result['total_violations']}"
+                )
+                db.add(audit)
+                db.commit()
         
         return {
             "submission_id": submission.id,
             "generated_content": generated_content,
+            "web_research": web_research,
+            "research_sources": research_sources,
             "compliance_status": compliance_result["compliance_status"],
             "is_approved": compliance_result["is_approved"],
             "violations": compliance_result["rule_violations"],
@@ -151,6 +185,7 @@ async def generate_compliant_content(
     except HTTPException:
         raise
     except Exception as e:
+        logger.error(f"Generate endpoint error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

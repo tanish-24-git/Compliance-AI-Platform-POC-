@@ -3,9 +3,12 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import func
+import logging
 
 from app.core.database import get_db
 from app.models.models import Violation, Submission, Rule
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 

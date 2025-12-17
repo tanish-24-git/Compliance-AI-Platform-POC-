@@ -15,10 +15,13 @@ from pydantic import BaseModel
 from typing import Optional
 from pathlib import Path
 import shutil
+import logging
 
 from app.core.database import get_db
-from app.models.models import Rule, RuleSeverity, AuditLog
+from app.models.models import Rule, RuleSeverity, AuditLog, User
 from app.services.embedding_service import get_embedding_service
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -409,16 +412,19 @@ async def upload_reference_document(
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
         
-        # Audit log (document upload, NOT rule creation)
-        audit = AuditLog(
-            user_id=user_id,
-            action="upload_reference_document",
-            entity_type="document",
-            entity_id=0,
-            details=f"Uploaded reference document: {file.filename} - FOR HUMAN REVIEW ONLY"
-        )
-        db.add(audit)
-        db.commit()
+        # Audit log (document upload, NOT rule creation) - only if valid user
+        if user_id > 0:
+            user = db.query(User).filter(User.id == user_id).first()
+            if user:
+                audit = AuditLog(
+                    user_id=user_id,
+                    action="upload_reference_document",
+                    entity_type="document",
+                    entity_id=0,
+                    details=f"Uploaded reference document: {file.filename} - FOR HUMAN REVIEW ONLY"
+                )
+                db.add(audit)
+                db.commit()
         
         return {
             "status": "success",

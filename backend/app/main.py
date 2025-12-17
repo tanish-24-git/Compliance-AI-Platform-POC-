@@ -55,13 +55,25 @@ except Exception as e:
 
 @app.on_event("startup")
 async def startup_event():
-    """Initialize database on startup"""
+    """Initialize database and auto-seed on startup"""
     try:
+        logger.info("🚀 Starting application...")
         logger.info("Initializing database...")
         init_db()
-        logger.info("Application startup complete")
+        
+        # Auto-seed database with users and rules
+        from app.core.database import get_db_session
+        from app.core.seeding import auto_seed_database
+        
+        db = get_db_session()
+        try:
+            auto_seed_database(db)
+        finally:
+            db.close()
+        
+        logger.info("✅ Application startup complete")
     except Exception as e:
-        logger.error(f"Startup failed: {e}")
+        logger.error(f"❌ Startup failed: {e}")
         raise
 
 
