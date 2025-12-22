@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { agentAPI } from '../../services/api';
 import type { GenerateContentResponse } from '../../types';
 
-const MOCK_USER_ID = 'agent-user-id'; // Mock user ID for POC
+const MOCK_USER_ID = '00000000-0000-0000-0000-000000000001'; // Valid UUID for POC
 
 export function ChatInterface() {
   const [prompt, setPrompt] = useState('');
@@ -37,11 +37,26 @@ export function ChatInterface() {
 
       setPrompt('');
     } catch (error: any) {
+      let errorMessage = 'An error occurred';
+      
+      if (error.response?.data?.detail) {
+        // FastAPI validation errors are arrays of objects
+        if (Array.isArray(error.response.data.detail)) {
+          errorMessage = error.response.data.detail
+            .map((err: any) => `${err.loc.join('.')}: ${err.msg}`)
+            .join(', ');
+        } else {
+          errorMessage = error.response.data.detail;
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       setMessages(prev => [
         ...prev,
         {
           role: 'system',
-          content: `Error: ${error.response?.data?.detail || error.message}`,
+          content: `Error: ${errorMessage}`,
         },
       ]);
     } finally {

@@ -1,95 +1,94 @@
-# Compliance AI POC
+# Compliance AI Platform (POC)
 
-Enterprise-grade Compliance-First AI Content Generation & Validation POC with strict role separation and deterministic rule enforcement.
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Python](https://img.shields.io/badge/backend-FastAPI-green)
+![Frontend](https://img.shields.io/badge/frontend-React-blue)
+![Docker](https://img.shields.io/badge/deployment-Docker-blue)
 
-## Quick Start
+**Automated Compliance & Content Generation for the Insurance Industry**
 
-### Prerequisites
-- Docker & Docker Compose
-- API keys configured in `.env` file
+This Proof of Concept (POC) demonstrates an AI-powered platform that enables insurance agents to generate marketing content that is automatically validated against strictly enforced compliance rules (IRDAI/Brand Guidelines).
 
-### Run the Application
+## 🚀 Key Features
 
-```bash
-docker-compose up -d
-```
+- **Compliance-Aware Generation**: Generates content that inherently understands regulatory context using RAG (Retrieval Augmented Generation).
+- **Automated Verification**: Checks generated content against a database of rules using both deterministic and AI-based methods.
+- **Rule Extraction**: Automatically ingests PDF regulatory documents and extracts executable compliance rules.
+- **Tech Stack Switch**: Configurable LLM backend (Switch between Groq and Gemini).
 
-This will:
-1. Start PostgreSQL database
-2. Start FastAPI backend (runs seed script automatically)
-3. Start React frontend
+## 🏗 Architecture
 
-### Access the Application
+The system relies on a Microservices-ready architecture:
 
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:8000
-- **API Docs**: http://localhost:8000/docs
+- **Frontend**: React + TypeScript (User Interface)
+- **Backend**: FastAPI (Python)
+- **Database**: PostgreSQL (Relational Data)
+- **Vector DB**: Pinecone (Semantic Search for Rules)
+- **LLM Provider**: Groq (Llama 3.3) / Google Gemini
 
-### Default Users (created by seed script)
+For detailed architecture documentation, see [docs/](docs/).
 
-- Agent: `agent_user`
-- Admin: `admin_user`  
-- Super Admin: `super_admin_user`
+### Services
+- **[Content Service](docs/backend/content_service.md)**: Generates and purifies content.
+- **[Compliance Service](docs/backend/compliance_service.md)**: Checks existing documents.
+- **[Rule Service](docs/backend/rule_service.md)**: Manages rule lifecycle.
 
-## Architecture
+## 🛠 Prerequisites
 
-### Backend (FastAPI + PostgreSQL + Pinecone)
-- `/backend/app/models/` - SQLAlchemy ORM models
-- `/backend/app/providers/` - Cloud-swappable LLM & vector DB abstractions
-- `/backend/app/services/` - Business logic (rule management, content generation, compliance checking)
-- `/backend/app/api/` - FastAPI endpoints (agent, admin, super_admin)
+- **Docker** & **Docker Compose**
+- **Pinecone API Key** (Vector DB)
+- **Groq API Key** (Primary LLM)
+- **Gemini API Key** (Fallback/Embeddings)
 
-### Frontend (React + TypeScript + Vite)
-- `/frontend/src/components/` - React components by role
-- `/frontend/src/pages/` - Page components
-- `/frontend/src/services/` - API client
-- `/frontend/src/types/` - TypeScript definitions
+## ⚡ Getting Started
 
-## Key Features
+1.  **Clone the repository**
+    ```bash
+    git clone <repo-url>
+    cd poc
+    ```
 
-✅ **Rule-First Architecture** - Rules override AI outputs  
-✅ **Duplicate Detection** - SQL exact match + Pinecone semantic similarity  
-✅ **Immutable Versioning** - All rule updates create new versions  
-✅ **Token-Based Chunking** - Preserves legal meaning in documents  
-✅ **Audit Trail** - Every action logged  
-✅ **Cloud-Swappable** - Provider abstraction for easy migration
+2.  **Configure Environment**
+    Create a `.env` file in the root directory (copy from `.env.example`):
+    ```bash
+    cp .env.example .env
+    ```
+    Populate the keys:
+    ```ini
+    DATABASE_URL=postgresql://postgres:postgres@compliance-db:5432/compliance_db
+    PINECONE_API_KEY=your_key
+    PINECONE_ENV=your_env
+    GROQ_API_KEY=your_key
+    GEMINI_API_KEY=your_key
+    DEFAULT_LLM_PROVIDER=groq
+    ```
 
-## Technology Stack
+3.  **Run with Docker**
+    ```bash
+    docker compose up -d --build
+    ```
 
-- **Backend**: FastAPI, SQLAlchemy, PostgreSQL
-- **LLMs**: Gemini / Groq (swappable)
-- **Vector DB**: Pinecone (swappable to OpenSearch)
-- **Frontend**: React, TypeScript, Vite
-- **Deployment**: Docker Compose
+4.  **Access the Application**
+    - Frontend: [http://localhost:3000](http://localhost:3000)
+    - Backend API Docs: [http://localhost:8000/docs](http://localhost:8000/docs)
 
-## Development
+## 📝 Configuration
 
-### Backend Development
-```bash
-cd backend
-pip install -r requirements.txt
-python seed_data.py
-uvicorn app.main:app --reload
-```
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `DEFAULT_LLM_PROVIDER` | Primary LLM for generation | `groq` |
+| `REVIEWER_LLM_PROVIDER` | LLM for compliance auditing | `groq` |
+| `SEMANTIC_SIMILARITY_THRESHOLD` | Threshold for duplicate rule detection | `0.85` |
 
-### Frontend Development
-```bash
-cd frontend
-npm install
-npm run dev
-```
+## 📚 Documentation
 
-## API Documentation
+Detailed documentation for each service is available in the `docs/` directory:
 
-Visit http://localhost:8000/docs for interactive API documentation.
+- [Backend Content Service](docs/backend/content_service.md)
+- [Backend Compliance Service](docs/backend/compliance_service.md)
+- [Backend Rule Service](docs/backend/rule_service.md)
+- [Frontend Architecture](docs/frontend/architecture.md)
 
-## Production Considerations
+## 📄 License
 
-This is a POC. For production:
-- Add proper authentication (OAuth/JWT)
-- Implement rate limiting
-- Add comprehensive logging
-- Set up monitoring and alerting
-- Configure CORS properly
-- Use managed database services
-- Implement proper secret management
+This project is licensed under the MIT License.

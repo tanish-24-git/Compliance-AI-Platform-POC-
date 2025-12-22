@@ -22,6 +22,7 @@ router = APIRouter(prefix="/agent", tags=["Agent"])
 def get_content_service(db: Session = Depends(get_db)) -> ContentService:
     """Dependency for content service"""
     # Select LLM providers based on config
+    print(f"DEBUG: DEFAULT_LLM_PROVIDER={settings.DEFAULT_LLM_PROVIDER}")
     if settings.DEFAULT_LLM_PROVIDER == "gemini":
         generator = GeminiProvider()
     else:

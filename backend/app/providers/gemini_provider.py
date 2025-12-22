@@ -11,7 +11,7 @@ class GeminiProvider(LLMProvider):
     
     def __init__(self):
         genai.configure(api_key=settings.GEMINI_API_KEY)
-        self.model = genai.GenerativeModel('gemini-pro')
+        self.model = genai.GenerativeModel('gemini-2.0-flash')
         
     async def generate(
         self,

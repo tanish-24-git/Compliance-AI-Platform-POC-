@@ -9,7 +9,7 @@ class ContentGenerateRequest(BaseModel):
     """Schema for content generation request"""
     prompt: str = Field(..., min_length=5)
     use_prompt_enhancer: bool = False
-    user_id: UUID
+    user_id: UUID = Field(default=UUID('00000000-0000-0000-0000-000000000001'))
 
 
 class RuleTriggered(BaseModel):

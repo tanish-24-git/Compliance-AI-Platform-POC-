@@ -24,8 +24,8 @@ class Settings(BaseSettings):
     EMBEDDING_METRIC: str = "cosine"
     
     # LLM Selection
-    DEFAULT_LLM_PROVIDER: str = "gemini"  # gemini or groq
-    REVIEWER_LLM_PROVIDER: str = "gemini"
+    DEFAULT_LLM_PROVIDER: str = "groq"  # gemini or groq
+    REVIEWER_LLM_PROVIDER: str = "groq"
     
     # Duplicate Detection
     SEMANTIC_SIMILARITY_THRESHOLD: float = 0.95

@@ -12,7 +12,9 @@ from app.schemas.rule import (
 from app.services.rule_service import RuleService
 from app.services.duplicate_detector import DuplicateDetector
 from app.providers.gemini_provider import GeminiProvider
+from app.providers.groq_provider import GroqProvider
 from app.providers.pinecone_provider import PineconeProvider
+from app.core.config import settings
 from typing import List
 from uuid import UUID
 
@@ -21,14 +23,14 @@ router = APIRouter(prefix="/super-admin", tags=["Super Admin"])
 
 def get_rule_service(db: Session = Depends(get_db)) -> RuleService:
     """Dependency for rule service"""
-    llm_provider = GeminiProvider()
+    llm_provider = GeminiProvider() if settings.DEFAULT_LLM_PROVIDER == "gemini" else GroqProvider()
     vector_provider = PineconeProvider()
     return RuleService(db=db, llm_provider=llm_provider, vector_provider=vector_provider)
 
 
 def get_duplicate_detector(db: Session = Depends(get_db)) -> DuplicateDetector:
     """Dependency for duplicate detector"""
-    llm_provider = GeminiProvider()
+    llm_provider = GeminiProvider() if settings.DEFAULT_LLM_PROVIDER == "gemini" else GroqProvider()
     vector_provider = PineconeProvider()
     return DuplicateDetector(db=db, llm_provider=llm_provider, vector_provider=vector_provider)
 

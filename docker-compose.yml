@@ -36,8 +36,8 @@ services:
       - EMBEDDING_MODEL=${EMBEDDING_MODEL}
       - EMBEDDING_DIMENSIONS=${EMBEDDING_DIMENSIONS}
       - EMBEDDING_METRIC=${EMBEDDING_METRIC}
-      - DEFAULT_LLM_PROVIDER=gemini
-      - REVIEWER_LLM_PROVIDER=gemini
+      - DEFAULT_LLM_PROVIDER=${DEFAULT_LLM_PROVIDER:-groq}
+      - REVIEWER_LLM_PROVIDER=${REVIEWER_LLM_PROVIDER:-groq}
     depends_on:
       postgres:
         condition: service_healthy
