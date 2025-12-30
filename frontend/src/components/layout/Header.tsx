@@ -6,7 +6,7 @@ export function Header() {
 
   return (
     <div className="header">
-      <h1>Compliance AI POC</h1>
+      <h1>Bajaj Compliance AI</h1>
       <button className="theme-toggle" onClick={toggleTheme}>
         {theme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode'}
       </button>

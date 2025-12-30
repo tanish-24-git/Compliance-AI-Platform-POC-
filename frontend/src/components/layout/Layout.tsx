@@ -14,6 +14,9 @@ export function Layout({ children }: LayoutProps) {
       <div className="container">
         {children}
       </div>
+      <footer className="footer">
+        Compliance AI Platform © 2025
+      </footer>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './components/layout/Layout';
+import { HomePage } from './pages/HomePage';
 import { AgentPage } from './pages/AgentPage';
 import { AdminPage } from './pages/AdminPage';
 import { SuperAdminPage } from './pages/SuperAdminPage';
@@ -10,7 +11,7 @@ function App() {
     <Router>
       <Layout>
         <Routes>
-          <Route path="/" element={<Navigate to="/agent" replace />} />
+          <Route path="/" element={<HomePage />} />
           <Route path="/agent" element={<AgentPage />} />
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/super-admin" element={<SuperAdminPage />} />
